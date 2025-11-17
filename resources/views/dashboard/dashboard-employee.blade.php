@@ -1,0 +1,151 @@
+@extends('layouts.app')
+
+@section('title', 'Employee Dashboard')
+
+@section('content')
+<div class="container-fluid mt-4">
+    <!-- Welcome Section -->
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <div class="card bg-primary text-white shadow-sm">
+                <div class="card-body">
+                    <h1 class="card-title mb-0">Welcome, {{ Auth::user()->name }}</h1>
+                    <p class="card-text mt-2">Employee Dashboard - {{ date('l, F d, Y') }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Statistics Cards -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card shadow-sm border-0">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="text-muted mb-2">Total Students</h6>
+                            <h3 class="text-primary mb-0">125</h3>
+                        </div>
+                        <i class="fas fa-users fa-3x text-primary opacity-50"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card shadow-sm border-0">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="text-muted mb-2">Total Teachers</h6>
+                            <h3 class="text-success mb-0">28</h3>
+                        </div>
+                        <i class="fas fa-chalkboard-user fa-3x text-success opacity-50"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card shadow-sm border-0">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="text-muted mb-2">Total Classes</h6>
+                            <h3 class="text-warning mb-0">12</h3>
+                        </div>
+                        <i class="fas fa-school fa-3x text-warning opacity-50"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card shadow-sm border-0">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="text-muted mb-2">Active Sessions</h6>
+                            <h3 class="text-danger mb-0">15</h3>
+                        </div>
+                        <i class="fas fa-heartbeat fa-3x text-danger opacity-50"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="row">
+        <!-- Quick Links -->
+        <div class="col-md-6 mb-4">
+            <div class="card shadow-sm">
+                <div class="card-header bg-light">
+                    <h5 class="card-title mb-0">Quick Links</h5>
+                </div>
+                <div class="card-body">
+                    <div class="list-group">
+                        <a href="{{ route('employee.employees.index') }}" class="list-group-item list-group-item-action">
+                            <i class="fas fa-user-tie"></i> Manage Employees
+                        </a>
+                        <a href="{{ route('employee.teachers.index') }}" class="list-group-item list-group-item-action">
+                            <i class="fas fa-chalkboard-user"></i> Manage Teachers
+                        </a>
+                        <a href="{{ route('employee.students.index') }}" class="list-group-item list-group-item-action">
+                            <i class="fas fa-user-graduate"></i> Manage Students
+                        </a>
+                        <a href="{{ route('employee.classes.index') }}" class="list-group-item list-group-item-action">
+                            <i class="fas fa-school"></i> Manage Classes
+                        </a>
+                        <a href="{{ route('employee.subjects.index') }}" class="list-group-item list-group-item-action">
+                            <i class="fas fa-book"></i> Manage Subjects
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Transaction Management -->
+        <div class="col-md-6 mb-4">
+            <div class="card shadow-sm">
+                <div class="card-header bg-light">
+                    <h5 class="card-title mb-0">Transaction Management</h5>
+                </div>
+                <div class="card-body">
+                    <div class="list-group">
+                        <a href="{{ route('employee.attendance.index') }}" class="list-group-item list-group-item-action">
+                            <i class="fas fa-clipboard-list"></i> Attendance
+                        </a>
+                        <a href="{{ route('employee.grades.index') }}" class="list-group-item list-group-item-action">
+                            <i class="fas fa-star"></i> Grades
+                        </a>
+                        <a href="{{ route('employee.schedules.index') }}" class="list-group-item list-group-item-action">
+                            <i class="fas fa-calendar-alt"></i> Schedules
+                        </a>
+                        <a href="{{ route('employee.payments.index') }}" class="list-group-item list-group-item-action">
+                            <i class="fas fa-credit-card"></i> Payments
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Additional Sections -->
+    <div class="row">
+        <div class="col-md-12 mb-4">
+            <div class="card shadow-sm">
+                <div class="card-header bg-light">
+                    <h5 class="card-title mb-0">Recent Activity</h5>
+                </div>
+                <div class="card-body">
+                    <p class="text-muted">No recent activity to display.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .opacity-50 {
+        opacity: 0.5;
+    }
+</style>
+@endsection

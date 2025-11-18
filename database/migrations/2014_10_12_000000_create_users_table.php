@@ -11,12 +11,15 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('users', function (Blueprint $table) {
-            $table->id();
-            $table->string('name');
-            $table->string('email')->unique();
-            $table->timestamp('email_verified_at')->nullable();
-            $table->string('password');
+        Schema::create('mst_employees', function (Blueprint $table) {
+            $table->id('employee_id');
+            $table->string('username')->unique();
+            $table->string('first_name');
+            $table->string('last_name')->nullable();
+            $table->string('email')->nullable();
+            $table->string('password', 255); // wajib 255 untuk bcrypt
+            $table->string('level')->default('User');
+            $table->string('status')->default('Active'); 
             $table->rememberToken();
             $table->timestamps();
         });
@@ -27,6 +30,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('users');
+        Schema::dropIfExists('mst_employees');
     }
 };

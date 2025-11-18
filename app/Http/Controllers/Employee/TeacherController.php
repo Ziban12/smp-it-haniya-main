@@ -36,16 +36,17 @@ class TeacherController extends Controller
      * 
      * @return \Illuminate\View\View
      */
-    public function index()
-    {
-        // RAW SELECT QUERY: Fetch all teachers
-        $teachers = DB::select(
-            'SELECT * FROM mst_teachers WHERE status = ? ORDER BY teacher_id DESC',
-            ['Active']
-        );
+   public function index()
+{
+    // RAW SELECT QUERY (hasil array) → ubah ke Collection
+    $teachers = collect(DB::select(
+        'SELECT * FROM mst_teachers WHERE status = ? ORDER BY teacher_id DESC',
+        ['Active']
+    ));
 
-        return view('employee.teachers.index', compact('teachers'));
-    }
+    return view('teachers.index', compact('teachers'));
+}
+
 
     /**
      * Show the form for creating a new teacher
@@ -54,7 +55,7 @@ class TeacherController extends Controller
      */
     public function create()
     {
-        return view('employee.teachers.create');
+        return view('teachers.create');
     }
 
     /**

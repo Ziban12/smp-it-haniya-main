@@ -26,7 +26,8 @@
             </div>
         @endif
 
-        @if ($employees->count() > 0)
+     @if ($employees->count() > 0)
+
             <div class="table-responsive">
                 <table class="table table-hover">
                     <thead>

@@ -20,6 +20,7 @@
         @endif
 
         @if ($teachers->count() > 0)
+
             <div class="table-responsive">
                 <table class="table table-hover">
                     <thead>

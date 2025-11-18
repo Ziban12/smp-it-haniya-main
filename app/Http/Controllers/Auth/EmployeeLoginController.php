@@ -35,38 +35,40 @@ class EmployeeLoginController extends Controller
      * @param \Illuminate\Http\Request $request
      * @return \Illuminate\Http\RedirectResponse
      */
-    public function authenticate(Request $request)
-    {
-        // Validate input
-        $validated = $request->validate([
-            'username' => 'required|string',
-            'password' => 'required|string|min:6',
-        ]);
+   public function authenticate(Request $request)
+{
+    $validated = $request->validate([
+        'username' => 'required|string',
+        'password' => 'required|string|min:6',
+    ]);
 
-        // RAW SELECT QUERY: Fetch employee by username
-        $employee = DB::select(
-            'SELECT * FROM mst_employees WHERE username = ? AND status = ?',
-            [$validated['username'], 'Active']
-        );
+    // Ambil employee
+    $employee = DB::table('mst_employees')
+        ->where('username', $validated['username'])
+        ->where('status', 'Active')
+        ->first();
 
-        // Verify employee exists and password matches
-        if (!empty($employee) && Hash::check($validated['password'], $employee[0]->password)) {
-            // Store in session
+    if ($employee) {
+
+        // Cek hash bcrypt
+        if (Hash::check($validated['password'], $employee->password)) {
+
             session([
-                'employee_id' => $employee[0]->employee_id,
-                'name' => $employee[0]->first_name . ' ' . $employee[0]->last_name,
-                'level' => $employee[0]->level,
-                'user_type' => 'employee'
+                'employee_id' => $employee->employee_id,
+                'name'        => $employee->first_name . ' ' . $employee->last_name,
+                'level'       => $employee->level,
+                'user_type'   => 'employee'
             ]);
 
-            return redirect()->route('employee.dashboard')
-                ->with('success', 'Welcome, ' . session('name') . '!');
+            return redirect()->route('employee.dashboard');
         }
-
-        return back()
-            ->withErrors(['username' => 'Invalid credentials or account is inactive.'])
-            ->onlyInput('username');
     }
+
+    return back()->withErrors([
+        'username' => 'Invalid username or password'
+    ]);
+}
+
 
     /**
      * Logout the employee

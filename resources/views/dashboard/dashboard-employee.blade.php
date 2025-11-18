@@ -9,8 +9,17 @@
         <div class="col-md-12">
             <div class="card bg-primary text-white shadow-sm">
                 <div class="card-body">
-                    <h1 class="card-title mb-0">Welcome, {{ Auth::user()->name }}</h1>
-                    <p class="card-text mt-2">Employee Dashboard - {{ date('l, F d, Y') }}</p>
+                    <h1 class="card-title mb-0">
+                        @if(Auth::check())
+                        Welcome, {{ Auth::user()->name }}
+                        @elseif(session()->has('name'))
+                        Welcome, {{ session('name') }}
+                        @else
+                        Welcome, Employee
+                        @endif
+                    </h1>
+                    <p class="card-text mt-2">Employee Dashboard - {{ now()->format('l, F d, Y') }}</p>
+
                 </div>
             </div>
         </div>

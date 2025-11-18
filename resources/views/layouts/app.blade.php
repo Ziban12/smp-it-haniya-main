@@ -316,9 +316,27 @@
             @if(session('user_type') === 'employee')
                 <ul class="sidebar-menu">
                     <li><a href="{{ route('employee.dashboard') }}" class="@if(Route::currentRouteName() === 'employee.dashboard') active @endif"><i class="fas fa-chart-line"></i> Dashboard</a></li>
-                    <li><a href="{{ route('employee.employees.index') }}" class="@if(Route::currentRouteNamePrefix() === 'employee.employees') active @endif"><i class="fas fa-users"></i> Employees</a></li>
-                    <li><a href="{{ route('employee.teachers.index') }}" class="@if(Route::currentRouteNamePrefix() === 'employee.teachers') active @endif"><i class="fas fa-chalkboard-user"></i> Teachers</a></li>
-                    <li><a href="{{ route('employee.students.index') }}" class="@if(Route::currentRouteNamePrefix() === 'employee.students') active @endif"><i class="fas fa-book"></i> Students</a></li>
+                   <li>
+    <a href="{{ route('employee.employees.index') }}"
+       class="{{ request()->routeIs('employee.employees.*') ? 'active' : '' }}">
+        <i class="fas fa-users"></i> Employees
+    </a>
+</li>
+
+<li>
+    <a href="{{ route('employee.teachers.index') }}"
+       class="{{ request()->routeIs('employee.teachers.*') ? 'active' : '' }}">
+        <i class="fas fa-chalkboard-user"></i> Teachers
+    </a>
+</li>
+
+<li>
+    <a href="{{ route('employee.students.index') }}"
+       class="{{ request()->routeIs('employee.students.*') ? 'active' : '' }}">
+        <i class="fas fa-book"></i> Students
+    </a>
+</li>
+
                     <li><a href="{{ route('employee.logout') }}"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
                 </ul>
             @elseif(session('user_type') === 'teacher')

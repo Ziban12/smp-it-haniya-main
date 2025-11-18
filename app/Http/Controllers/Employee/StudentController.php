@@ -44,7 +44,7 @@ class StudentController extends Controller
             ['Active']
         );
 
-        return view('employee.students.index', compact('students'));
+        return view('students.index', compact('students'));
     }
 
     /**

@@ -54,12 +54,12 @@ class EmployeeController extends Controller
     public function index()
     {
         // RAW SELECT QUERY: Fetch all employees
-        $employees = DB::select(
-            'SELECT * FROM mst_employees WHERE status = ? ORDER BY employee_id DESC',
-            ['Active']
-        );
+       $employees = DB::table('mst_employees')
+    ->where('status', 'Active')
+    ->get();
 
-        return view('employee.employees.index', compact('employees'));
+
+return view('employees.index', compact('employees'));
     }
 
     /**
@@ -69,7 +69,7 @@ class EmployeeController extends Controller
      */
     public function create()
     {
-        return view('employee.employees.create');
+        return view('employees.create');
     }
 
     /**

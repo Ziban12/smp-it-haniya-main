@@ -10,7 +10,7 @@ class MstEvent extends Model
     protected $primaryKey = 'event_id';
     public $incrementing = false;
     protected $keyType = 'string';
-    public $timestamps = false;
+    public $timestamps = true;
 
     protected $fillable = [
         'event_id',

@@ -8,12 +8,11 @@ class MstHeaderSetting extends Model
 {
     protected $table = 'mst_header_settings';
     protected $primaryKey = 'header_id';
-    public $incrementing = false;
-    protected $keyType = 'string';
-    public $timestamps = false;
+    public $incrementing = true;
+    protected $keyType = 'int';
+    public $timestamps = true;
 
     protected $fillable = [
-        'header_id',
         'title',
         'created_at',
         'updated_at',

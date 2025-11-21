@@ -11,33 +11,10 @@
                 <h5 class="mb-0"><i class="fas fa-user-plus"></i> Add New Student</h5>
             </div>
             <div class="card-body">
-                <form action="{{ route('employee.students.store') }}" method="POST">
+                <form action="{{ route('employee.students.store') }}" method="POST" enctype="multipart/form-data">
                     @csrf
 
                     <h6 class="mb-3 text-primary">Personal Information</h6>
-
-                    <div class="row">
-                        <div class="col-md-6">
-                            <div class="form-group">
-                                <label for="student_id" class="form-label">Student ID *</label>
-                                <input type="text" class="form-control @error('student_id') is-invalid @enderror" 
-                                       id="student_id" name="student_id" value="{{ old('student_id') }}" required>
-                                @error('student_id')
-                                    <div class="invalid-feedback">{{ $message }}</div>
-                                @enderror
-                            </div>
-                        </div>
-                        <div class="col-md-6">
-                            <div class="form-group">
-                                <label for="nis" class="form-label">NIS *</label>
-                                <input type="text" class="form-control @error('nis') is-invalid @enderror" 
-                                       id="nis" name="nis" value="{{ old('nis') }}" required>
-                                @error('nis')
-                                    <div class="invalid-feedback">{{ $message }}</div>
-                                @enderror
-                            </div>
-                        </div>
-                    </div>
 
                     <div class="row">
                         <div class="col-md-6">
@@ -60,6 +37,15 @@
                                 @enderror
                             </div>
                         </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="nis" class="form-label">NIS *</label>
+                        <input type="text" class="form-control @error('nis') is-invalid @enderror" 
+                               id="nis" name="nis" value="{{ old('nis') }}" required>
+                        @error('nis')
+                            <div class="invalid-feedback">{{ $message }}</div>
+                        @enderror
                     </div>
 
                     <div class="row">
@@ -161,6 +147,27 @@
                     <div class="form-group">
                         <label for="entry_date" class="form-label">Entry Date</label>
                         <input type="date" class="form-control" id="entry_date" name="entry_date" value="{{ old('entry_date') }}">
+                    </div>
+
+                    <h6 class="mb-3 mt-4 text-primary">Additional Information</h6>
+
+                    <div class="form-group">
+                        <label for="profile_photo" class="form-label">Profile Photo</label>
+                        <input type="file" class="form-control @error('profile_photo') is-invalid @enderror" 
+                               id="profile_photo" name="profile_photo" accept="image/*">
+                        <small class="form-text text-muted">Allowed: JPEG, PNG, JPG, GIF. Max 2MB</small>
+                        @error('profile_photo')
+                            <div class="invalid-feedback">{{ $message }}</div>
+                        @enderror
+                    </div>
+
+                    <div class="form-group">
+                        <label for="status" class="form-label">Status</label>
+                        <select class="form-select" id="status" name="status">
+                            <option value="">-- Select Status --</option>
+                            <option value="Active" @selected(old('status') === 'Active')>Active</option>
+                            <option value="Inactive" @selected(old('status') === 'Inactive')>Inactive</option>
+                        </select>
                     </div>
 
                     <div class="d-flex gap-2">

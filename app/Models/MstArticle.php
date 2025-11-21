@@ -9,8 +9,8 @@ class MstArticle extends Model
     protected $table = 'mst_articles';
     protected $primaryKey = 'article_id';
     public $incrementing = false;
-    protected $keyType = 'string';
-    public $timestamps = false;
+    protected $keyType = 'stirng';
+    public $timestamps = true;
 
     protected $fillable = [
         'article_id',

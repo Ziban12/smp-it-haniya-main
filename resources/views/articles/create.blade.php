@@ -25,16 +25,6 @@
                         @csrf
 
                         <div class="mb-3">
-                            <label for="article_id" class="form-label">Article ID <span class="text-danger">*</span></label>
-                            <input type="text" class="form-control @error('article_id') is-invalid @enderror" 
-                                   id="article_id" name="article_id" placeholder="e.g., ART001"
-                                   value="{{ old('article_id') }}" required>
-                            @error('article_id')
-                                <small class="text-danger">{{ $message }}</small>
-                            @enderror
-                        </div>
-
-                        <div class="mb-3">
                             <label for="title" class="form-label">Title <span class="text-danger">*</span></label>
                             <input type="text" class="form-control @error('title') is-invalid @enderror" 
                                    id="title" name="title" placeholder="e.g., Article Title"

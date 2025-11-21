@@ -8,12 +8,11 @@ class MstTagArticle extends Model
 {
     protected $table = 'mst_tag_articles';
     protected $primaryKey = 'tag_id';
-    public $incrementing = false;
-    protected $keyType = 'string';
-    public $timestamps = false;
+    public $incrementing = true;
+    protected $keyType = 'int';
+    public $timestamps = true;
 
     protected $fillable = [
-        'tag_id',
         'article_id',
         'tag_code',
         'created_at',

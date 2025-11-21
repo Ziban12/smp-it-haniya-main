@@ -9,11 +9,7 @@ class StoreAttendanceRequest extends FormRequest
     /**
      * Determine if the user is authorized to make this request.
      */
-    public function authorize(): bool
-    {
-        return session('user_type') === 'Employee';
-    }
-
+   
     /**
      * Get the validation rules that apply to the request.
      */
@@ -50,6 +46,7 @@ class StoreAttendanceRequest extends FormRequest
                 'string',
                 'max:500',
             ],
+            
         ];
     }
 

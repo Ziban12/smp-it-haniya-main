@@ -16,9 +16,12 @@ class PaymentController extends Controller
     // Check authentication before accessing
     public function __construct()
     {
-        if (session('user_type') !== 'Employee') {
-            return redirect('/employee/login');
-        }
+        $this->middleware(function ($request, $next) {
+            if (!session('user_type') || session('user_type') !== 'Employee') {
+                return redirect('/employee/login');
+            }
+            return $next($request);
+        });
     }
 
     /**

@@ -32,7 +32,7 @@ class MstSubject extends Model
     protected $primaryKey = 'subject_id';
 
     /**
-     * Primary key is not auto-incrementing
+     * Primary key is auto-incrementing
      */
     public $incrementing = false;
 

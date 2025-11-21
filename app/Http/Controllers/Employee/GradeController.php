@@ -12,34 +12,31 @@ use App\Http\Requests\UpdateGradeRequest;
 class GradeController extends Controller
 {
     // Check authentication before accessing
-    public function __construct()
-    {
-        if (session('user_type') !== 'Employee') {
-            return redirect('/employee/login');
-        }
-    }
+ 
 
     /**
      * Display all grade records with filtering
      */
-    public function index()
-    {
-        $grades = DB::select('
-            SELECT g.*, sc.student_id, s.first_name, s.last_name, 
-                   c.class_name, sub.subject_name, t.first_name as teacher_name
-            FROM txn_grades g
-            JOIN mst_student_classes sc ON g.student_class_id = sc.student_class_id
-            JOIN mst_students s ON sc.student_id = s.student_id
-            JOIN mst_classes c ON sc.class_id = c.class_id
-            JOIN mst_subjects sub ON g.subject_id = sub.subject_id
-            JOIN mst_teachers t ON g.teacher_id = t.teacher_id
-            ORDER BY g.created_at DESC
-            LIMIT 1000
-        ');
+ public function index()
+{
+    $grades = collect(DB::select('
+        SELECT TOP 1000 
+               -- Ganti g.* dengan daftar kolom eksplisit dari txn_grades (g)
+               g.grade_id, g.student_class_id, g.subject_id, g.teacher_id, g.grade_value, g.grade_date, 
+               g.created_at, g.updated_at, -- Asumsikan kolom timestamp juga ada di sini
+               sc.student_id, s.first_name, s.last_name, 
+               c.class_name, sub.subject_name, t.first_name as teacher_name
+        FROM txn_grades g
+        JOIN mst_student_classes sc ON g.student_class_id = sc.student_class_id
+        JOIN mst_students s ON sc.student_id = s.student_id
+        JOIN mst_classes c ON sc.class_id = c.class_id
+        JOIN mst_subjects sub ON g.subject_id = sub.subject_id
+        JOIN mst_teachers t ON g.teacher_id = t.teacher_id
+        ORDER BY g.created_at DESC
+    '));
 
-        return view('employee.grades.index', compact('grades'));
-    }
-
+    return view('employee.grades.index', compact('grades'));
+}
     /**
      * Show form for bulk grade input by class
      */

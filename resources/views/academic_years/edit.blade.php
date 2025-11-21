@@ -6,16 +6,12 @@
         <div class="col-md-8">
             <h2><i class="fas fa-edit"></i> Edit Academic Year</h2>
         </div>
-        <div class="col-md-4 text-end">
-            <a href="{{ route('employee.academic_years.index') }}" class="btn btn-secondary">
-                <i class="fas fa-arrow-left"></i> Back to Academic Years
-            </a>
-        </div>
+       
     </div>
 
     <div class="card">
         <div class="card-body">
-            <form action="{{ route('employee.academic_years.update', $academicYear->academic_year_id) }}" method="POST">
+            <form action="{{ route('employee.academic.update-academic', $academicYear->academic_year_id) }}" method="POST">
                 @csrf
                 @method('PUT')
 
@@ -75,7 +71,7 @@
                     <button type="submit" class="btn btn-primary">
                         <i class="fas fa-save"></i> Update Academic Year
                     </button>
-                    <a href="{{ route('employee.academic_years.index') }}" class="btn btn-secondary">
+                    <a href="{{ route('employee.academic-years.index') }}" class="btn btn-secondary">
                         <i class="fas fa-times"></i> Cancel
                     </a>
                 </div>

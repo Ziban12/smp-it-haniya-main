@@ -7,7 +7,7 @@
             <h2><i class="fas fa-users"></i> Student Class Assignments</h2>
         </div>
         <div class="col-md-4 text-end">
-            <a href="{{ route('employee.student_classes.create') }}" class="btn btn-primary">
+            <a href="{{ route('employee.student-classes.create') }}" class="btn btn-primary">
                 <i class="fas fa-plus"></i> Assign Students to Class
             </a>
         </div>
@@ -57,11 +57,11 @@
                                 @endif
                             </td>
                             <td>
-                                <a href="{{ route('employee.student_classes.edit', $studentClass->student_class_id) }}" 
+                                <a href="{{ route('employee.student-classes.edit', $studentClass->student_class_id) }}" 
                                    class="btn btn-sm btn-warning">
                                     <i class="fas fa-edit"></i> Edit
                                 </a>
-                                <form action="{{ route('employee.student_classes.destroy', $studentClass->student_class_id) }}" 
+                                <form action="{{ route('employee.student-classes.destroy', $studentClass->student_class_id) }}" 
                                       method="POST" style="display:inline;" 
                                       onsubmit="return confirm('Are you sure?');">
                                     @csrf
@@ -76,7 +76,7 @@
                         <tr>
                             <td colspan="6" class="text-center py-4">
                                 <i class="fas fa-inbox text-muted" style="font-size: 2rem;"></i>
-                                <p class="text-muted mt-2">No student assignments found. <a href="{{ route('employee.student_classes.create') }}">Create one</a></p>
+                                <p class="text-muted mt-2">No student assignments found. <a href="{{ route('employee.student-classes.create') }}">Create one</a></p>
                             </td>
                         </tr>
                     @endforelse

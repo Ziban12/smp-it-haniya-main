@@ -20,15 +20,6 @@
 
                 <div class="row">
                     <div class="col-md-6 mb-3">
-                        <label for="class_id" class="form-label">Class ID <span class="text-danger">*</span></label>
-                        <input type="text" class="form-control @error('class_id') is-invalid @enderror" 
-                               id="class_id" name="class_id" value="{{ old('class_id') }}" required>
-                        @error('class_id')
-                            <div class="invalid-feedback">{{ $message }}</div>
-                        @enderror
-                    </div>
-
-                    <div class="col-md-6 mb-3">
                         <label for="class_name" class="form-label">Class Name <span class="text-danger">*</span></label>
                         <input type="text" class="form-control @error('class_name') is-invalid @enderror" 
                                id="class_name" name="class_name" value="{{ old('class_name') }}" required>
@@ -36,9 +27,7 @@
                             <div class="invalid-feedback">{{ $message }}</div>
                         @enderror
                     </div>
-                </div>
 
-                <div class="row">
                     <div class="col-md-6 mb-3">
                         <label for="class_level" class="form-label">Class Level <span class="text-danger">*</span></label>
                         <input type="text" class="form-control @error('class_level') is-invalid @enderror" 

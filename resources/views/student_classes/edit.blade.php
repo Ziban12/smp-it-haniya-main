@@ -7,7 +7,7 @@
             <h2><i class="fas fa-edit"></i> Edit Student Class Assignment</h2>
         </div>
         <div class="col-md-4 text-end">
-            <a href="{{ route('employee.student_classes.index') }}" class="btn btn-secondary">
+            <a href="{{ route('employee.student-classes.index') }}" class="btn btn-secondary">
                 <i class="fas fa-arrow-left"></i> Back to Assignments
             </a>
         </div>
@@ -15,7 +15,10 @@
 
     <div class="card">
         <div class="card-body">
-            <form action="{{ route('employee.student_classes.update', $studentClass->student_class_id) }}" method="POST">
+           <form action="{{ route('employee.student-classes.update', $studentClass->student_class_id) }}" method="POST">
+    @csrf
+    @method('PUT')
+
                 @csrf
                 @method('PUT')
 
@@ -38,8 +41,9 @@
                                 id="class_id" name="class_id" required>
                             <option value="">-- Select Class --</option>
                             @foreach ($classes as $class)
-                                <option value="{{ $class->class_id }}" {{ old('class_id', $studentClass->class_id) == $class->class_id ? 'selected' : '' }}>
-                                    {{ $class->class_name }} ({{ $class->class_level }})
+                                <option value="{{ $class->class_id }}" 
+                                    {{ old('class_id', $studentClass->class_id) == $class->class_id ? 'selected' : '' }}>
+                                    {{ $class->class_name }} ({{ $class->class_level ?? '' }})
                                 </option>
                             @endforeach
                         </select>
@@ -54,7 +58,8 @@
                                 id="academic_year_id" name="academic_year_id" required>
                             <option value="">-- Select Academic Year --</option>
                             @foreach ($academicYears as $academicYear)
-                                <option value="{{ $academicYear->academic_year_id }}" {{ old('academic_year_id', $studentClass->academic_year_id) == $academicYear->academic_year_id ? 'selected' : '' }}>
+                                <option value="{{ $academicYear->academic_year_id }}" 
+                                    {{ old('academic_year_id', $studentClass->academic_year_id) == $academicYear->academic_year_id ? 'selected' : '' }}>
                                     {{ $academicYear->academic_year_id }} - Semester {{ $academicYear->semester }}
                                 </option>
                             @endforeach
@@ -81,7 +86,7 @@
                     <button type="submit" class="btn btn-primary">
                         <i class="fas fa-save"></i> Update Assignment
                     </button>
-                    <a href="{{ route('employee.student_classes.index') }}" class="btn btn-secondary">
+                    <a href="{{ route('employee.student-classes.index') }}" class="btn btn-secondary">
                         <i class="fas fa-times"></i> Cancel
                     </a>
                 </div>

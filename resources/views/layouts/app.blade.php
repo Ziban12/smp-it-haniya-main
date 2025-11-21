@@ -310,7 +310,7 @@
         <div class="sidebar">
             <div class="sidebar-brand">
                 <h4><i class="fas fa-graduation-cap"></i> SMS</h4>
-                <small>School Management</small>
+                <small>SMPIT HANIA</small>
             </div>
             
             @if(session('user_type') === 'employee')
@@ -336,6 +336,81 @@
         <i class="fas fa-book"></i> Students
     </a>
 </li>
+<li>
+    <a href="{{ route('employee.events.index') }}"
+       class="{{ request()->routeIs('employee.events.*') ? 'active' : '' }}">
+        <i class="fas fa-calendar"></i> Events
+    </a>
+</li>
+
+<li>
+    <a href="{{ route('employee.academic-years.index') }}"
+       class="{{ request()->routeIs('employee.academic-years.*') ? 'active' : '' }}">
+        <i class="fas fa-calendar-alt"></i> Academic Years
+    </a>
+</li>
+<li>
+    <a href="{{ route('employee.classes.index') }}"
+       class="{{ request()->routeIs('employee.classes.*') ? 'active' : '' }}">
+        <i class="fas fa-door-open"></i> Classes
+    </a>
+</li>
+<li>
+    <a href="{{ route('employee.articles.index') }}"
+       class="{{ request()->routeIs('employee.articles.*') ? 'active' : '' }}">
+        <i class="fas fa-newspaper"></i> Articles
+    </a>
+</li>
+<li>
+    <a href="{{ route('employee.subjects.index') }}"
+       class="{{ request()->routeIs('employee.subjects.*') ? 'active' : '' }}">
+        <i class="fas fa-book-open"></i> Subjects
+    </a>
+</li>
+<li>
+    <a href="{{ route('employee.student-classes.index') }}"
+       class="{{ request()->routeIs('employee.student-classes.*') ? 'active' : '' }}">
+        <i class="fas fa-book-open"></i> student classes
+    </a>
+</li>
+<li>
+    <a href="{{ route('employee.attendance.index') }}"
+       class="{{ request()->routeIs('employee.attendance.*') ? 'active' : '' }}">
+        <i class="fas fa-book-open"></i> Transaksi attendance
+    </a>
+</li>
+<li>
+    <a href="{{ route('employee.schedules.index') }}"
+       class="{{ request()->routeIs('employee.schedules.*') ? 'active' : '' }}">
+        <i class="fas fa-book-open"></i> Transaksi Schedules
+    </a>
+</li>
+<li>
+    <a href="{{ route('employee.tag-articles.index') }}"
+       class="{{ request()->routeIs('employee.tag-articles.*') ? 'active' : '' }}">
+        <i class="fas fa-tags"></i> Tag Articles
+    </a>
+</li>
+<li>
+    <a href="{{ route('employee.tag-events.index') }}"
+       class="{{ request()->routeIs('employee.tag-events.*') ? 'active' : '' }}">
+        <i class="fas fa-tags"></i> Tag Events
+    </a>
+</li>
+<li>
+   <a href="{{ route('employee.settings.index-header') }}"
+        class="{{ request()->routeIs('employee.settings.*') ? 'active' : '' }}">
+        <i class="fas fa-cog"></i> Settings
+    </a>
+</li>
+
+<li>
+    <a href="{{ route('employee.grades.index') }}"
+       class="{{ request()->routeIs('employee.grades.*') ? 'active' : '' }}">
+        <i class="fas fa-star"></i> Grades
+    </a>
+</li>
+
 
                     <li><a href="{{ route('employee.logout') }}"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
                 </ul>

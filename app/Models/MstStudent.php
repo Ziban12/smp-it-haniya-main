@@ -8,7 +8,10 @@ use Illuminate\Database\Eloquent\Model;
  * MstStudent Model
  * 
  * Represents a student in the system.
- * Used for student authentication and management.
+ * Attributes: student_id, first_name, last_name, nis, birth_date, birth_place, gender,
+ *             address, father_name, mother_name, father_phone, mother_phone, father_job,
+ *             mother_job, password, entry_date, graduation_date, profile_photo, status,
+ *             created_at, updated_at, created_by, updated_by
  */
 class MstStudent extends Model
 {
@@ -16,6 +19,7 @@ class MstStudent extends Model
     protected $primaryKey = 'student_id';
     public $incrementing = false;
     protected $keyType = 'string';
+    public $timestamps = true;
 
     protected $fillable = [
         'student_id',
@@ -37,11 +41,21 @@ class MstStudent extends Model
         'graduation_date',
         'profile_photo',
         'status',
+        'created_at',
+        'updated_at',
         'created_by',
         'updated_by'
     ];
 
     protected $hidden = ['password'];
+
+    protected $casts = [
+        'birth_date' => 'date',
+        'entry_date' => 'date',
+        'graduation_date' => 'date',
+        'created_at' => 'datetime',
+        'updated_at' => 'datetime',
+    ];
 
     /**
      * Get the full name of the student

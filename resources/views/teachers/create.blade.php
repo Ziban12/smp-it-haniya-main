@@ -11,26 +11,26 @@
                 <h5 class="mb-0"><i class="fas fa-user-plus"></i> Add New Teacher</h5>
             </div>
             <div class="card-body">
-                <form action="{{ route('employee.teachers.store') }}" method="POST">
+                <form action="{{ route('employee.teachers.store') }}" method="POST" enctype="multipart/form-data">
                     @csrf
 
                     <div class="row">
-                        <div class="col-md-6">
-                            <div class="form-group">
-                                <label for="teacher_id" class="form-label">Teacher ID *</label>
-                                <input type="text" class="form-control @error('teacher_id') is-invalid @enderror" 
-                                       id="teacher_id" name="teacher_id" value="{{ old('teacher_id') }}" required>
-                                @error('teacher_id')
-                                    <div class="invalid-feedback">{{ $message }}</div>
-                                @enderror
-                            </div>
-                        </div>
                         <div class="col-md-6">
                             <div class="form-group">
                                 <label for="npk" class="form-label">NPK *</label>
                                 <input type="text" class="form-control @error('npk') is-invalid @enderror" 
                                        id="npk" name="npk" value="{{ old('npk') }}" required>
                                 @error('npk')
+                                    <div class="invalid-feedback">{{ $message }}</div>
+                                @enderror
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="profile_photo" class="form-label">Profile Photo</label>
+                                <input type="file" class="form-control @error('profile_photo') is-invalid @enderror" 
+                                       id="profile_photo" name="profile_photo" accept="image/*">
+                                @error('profile_photo')
                                     <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror
                             </div>
@@ -127,6 +127,14 @@
                     <div class="form-group">
                         <label for="entry_date" class="form-label">Entry Date</label>
                         <input type="date" class="form-control" id="entry_date" name="entry_date" value="{{ old('entry_date') }}">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="status" class="form-label">Status</label>
+                        <select class="form-select" id="status" name="status">
+                            <option value="Active" @selected(old('status') === 'Active')>Active</option>
+                            <option value="Inactive" @selected(old('status') === 'Inactive')>Inactive</option>
+                        </select>
                     </div>
 
                     <div class="d-flex gap-2">

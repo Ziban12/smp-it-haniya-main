@@ -2,6 +2,7 @@
 
 @section('content')
 <div class="container-fluid">
+
     <div class="row mb-4">
         <div class="col-md-8">
             <h2><i class="fas fa-plus-circle"></i> Create New Subject</h2>
@@ -15,24 +16,36 @@
 
     <div class="card">
         <div class="card-body">
+
             <form action="{{ route('employee.subjects.store') }}" method="POST">
                 @csrf
 
+                {{-- Field subject_id hidden --}}
+                <input type="hidden" name="subject_id" value="{{ $newId ?? '' }}">
+
                 <div class="row">
                     <div class="col-md-6 mb-3">
-                        <label for="subject_id" class="form-label">Subject ID <span class="text-danger">*</span></label>
-                        <input type="text" class="form-control @error('subject_id') is-invalid @enderror" 
-                               id="subject_id" name="subject_id" value="{{ old('subject_id') }}" required>
-                        @error('subject_id')
+                        <label for="subject_code" class="form-label">
+                            Subject Code <span class="text-danger">*</span>
+                        </label>
+                        <input type="text" 
+                               class="form-control @error('subject_code') is-invalid @enderror"
+                               id="subject_code" name="subject_code" 
+                               value="{{ old('subject_code') }}" required>
+                        @error('subject_code')
                             <div class="invalid-feedback">{{ $message }}</div>
                         @enderror
                     </div>
 
                     <div class="col-md-6 mb-3">
-                        <label for="subject_code" class="form-label">Subject Code <span class="text-danger">*</span></label>
-                        <input type="text" class="form-control @error('subject_code') is-invalid @enderror" 
-                               id="subject_code" name="subject_code" value="{{ old('subject_code') }}" required>
-                        @error('subject_code')
+                        <label for="subject_name" class="form-label">
+                            Subject Name <span class="text-danger">*</span>
+                        </label>
+                        <input type="text" 
+                               class="form-control @error('subject_name') is-invalid @enderror"
+                               id="subject_name" name="subject_name" 
+                               value="{{ old('subject_name') }}" required>
+                        @error('subject_name')
                             <div class="invalid-feedback">{{ $message }}</div>
                         @enderror
                     </div>
@@ -40,18 +53,14 @@
 
                 <div class="row">
                     <div class="col-md-6 mb-3">
-                        <label for="subject_name" class="form-label">Subject Name <span class="text-danger">*</span></label>
-                        <input type="text" class="form-control @error('subject_name') is-invalid @enderror" 
-                               id="subject_name" name="subject_name" value="{{ old('subject_name') }}" required>
-                        @error('subject_name')
-                            <div class="invalid-feedback">{{ $message }}</div>
-                        @enderror
-                    </div>
+                        <label for="class_level" class="form-label">
+                            Class Level <span class="text-danger">*</span>
+                        </label>
+                        <input type="number" 
+                               class="form-control @error('class_level') is-invalid @enderror"
+                               id="class_level" name="class_level" 
+                               value="{{ old('class_level') }}" required>
 
-                    <div class="col-md-6 mb-3">
-                        <label for="class_level" class="form-label">Class Level <span class="text-danger">*</span></label>
-                        <input type="text" class="form-control @error('class_level') is-invalid @enderror" 
-                               id="class_level" name="class_level" value="{{ old('class_level') }}" required>
                         @error('class_level')
                             <div class="invalid-feedback">{{ $message }}</div>
                         @enderror
@@ -60,7 +69,7 @@
 
                 <div class="mb-3">
                     <label for="description" class="form-label">Description</label>
-                    <textarea class="form-control @error('description') is-invalid @enderror" 
+                    <textarea class="form-control @error('description') is-invalid @enderror"
                               id="description" name="description" rows="4">{{ old('description') }}</textarea>
                     @error('description')
                         <div class="invalid-feedback">{{ $message }}</div>
@@ -75,8 +84,11 @@
                         <i class="fas fa-times"></i> Cancel
                     </a>
                 </div>
+
             </form>
+
         </div>
     </div>
+
 </div>
 @endsection

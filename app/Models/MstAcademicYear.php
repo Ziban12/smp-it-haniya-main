@@ -32,7 +32,7 @@ class MstAcademicYear extends Model
     protected $primaryKey = 'academic_year_id';
 
     /**
-     * Primary key is not auto-incrementing
+     * Primary key is auto-incrementing
      */
     public $incrementing = false;
 

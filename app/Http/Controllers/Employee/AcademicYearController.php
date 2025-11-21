@@ -2,177 +2,173 @@
 
 namespace App\Http\Controllers\Employee;
 
+use App\Http\Controllers\Controller;
 use App\Models\MstAcademicYear;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
-/**
- * AcademicYearController
- * 
- * Handles CRUD operations for academic years
- * - All READ operations (index, edit) use raw SQL SELECT queries
- * - All WRITE operations (store, update, destroy) use Eloquent Models
- */
 class AcademicYearController extends Controller
 {
     /**
-     * Display list of academic years using raw SELECT query
-     * 
-     * @return \Illuminate\View\View
+     * Pastikan user employee sudah login
+     */
+    public function __construct()
+    {
+        $this->middleware(function ($request, $next) {
+            if (!session('user_type') || session('user_type') !== 'employee') {
+                return redirect()->route('employee.login');
+            }
+            return $next($request);
+        });
+    }
+
+    /**
+     * Tampilkan list academic year
      */
     public function index()
     {
-        // Check if user is employee
-        if (session('user_type') !== 'Employee') {
-            return redirect('/employee/login');
+        try {
+            $academicYears = MstAcademicYear::orderBy('start_date', 'DESC')->get();
+
+            return view('academic_years.index', [
+                'academicYears' => $academicYears
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Error fetching academic years: ' . $e->getMessage());
+            return view('academic_years.index', [
+                'academicYears' => collect([]),
+            ]);
         }
-
-        // Raw SELECT query to get all academic years
-        $academicYears = DB::select('SELECT * FROM mst_academic_year ORDER BY start_date DESC');
-
-        return view('employee.academic_years.index', ['academicYears' => $academicYears]);
     }
 
     /**
-     * Show form to create new academic year
-     * 
-     * @return \Illuminate\View\View
+     * Form create academic year
      */
     public function create()
     {
-        // Check if user is employee
-        if (session('user_type') !== 'Employee') {
-            return redirect('/employee/login');
-        }
-
-        return view('employee.academic_years.create');
+        return view('academic_years.create');
     }
 
     /**
-     * Store new academic year using Eloquent Model
-     * 
-     * @param \Illuminate\Http\Request $request
-     * @return \Illuminate\Http\RedirectResponse
+     * Simpan academic year baru
      */
     public function store(Request $request)
     {
-        // Check if user is employee
-        if (session('user_type') !== 'Employee') {
-            return redirect('/employee/login');
-        }
-
-        // Validate input
-        $validated = $request->validate([
-            'academic_year_id' => 'required|string|max:50|unique:mst_academic_year,academic_year_id',
-            'start_date' => 'required|date',
-            'end_date' => 'required|date|after:start_date',
-            'semester' => 'required|string|max:10',
-            'status' => 'required|string|in:Active,Inactive',
-        ]);
-
-        // Add created_by
-        $validated['created_by'] = session('employee_id');
-        $validated['updated_by'] = session('employee_id');
-
-        // Create academic year using Eloquent
         try {
-            MstAcademicYear::create($validated);
-            return redirect()->route('employee.academic_years.index')
-                           ->with('success', 'Academic Year created successfully!');
+            $validated = $request->validate([
+                'start_date' => 'required|date',
+                'end_date' => 'required|date|after:start_date',
+                'semester' => 'required|string|max:20',
+                'status' => 'required|in:Active,Inactive',
+            ]);
+
+            // Generate ID otomatis
+            $lastYear = MstAcademicYear::orderBy('academic_year_id', 'DESC')->first();
+
+            if ($lastYear) {
+                $lastNumber = intval(substr($lastYear->academic_year_id, 3));
+                $newId = 'ACY' . str_pad($lastNumber + 1, 4, '0', STR_PAD_LEFT);
+            } else {
+                $newId = 'ACY0001';
+            }
+
+            MstAcademicYear::create([
+                'academic_year_id' => $newId,
+                'start_date' => $validated['start_date'],
+                'end_date' => $validated['end_date'],
+                'semester' => $validated['semester'],
+                'status' => $validated['status'],
+                'created_by' => session('employee_id') ?? 'SYSTEM',
+                'updated_by' => session('employee_id') ?? 'SYSTEM',
+            ]);
+
+            Log::info('Academic year created: ' . $newId);
+
+            return redirect()
+                ->route('employee.academic-years.index')
+                ->with('success', 'Academic Year created successfully!');
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return back()->withInput()->withErrors($e->errors());
         } catch (\Exception $e) {
-            return back()->withInput()
-                        ->with('error', 'Failed to create academic year: ' . $e->getMessage());
+            Log::error('Error creating academic year: ' . $e->getMessage());
+            return back()->withInput()->with('error', 'Error: ' . $e->getMessage());
         }
     }
 
     /**
-     * Show form to edit academic year (fetch data with raw SELECT)
-     * 
-     * @param string $id Academic Year ID
-     * @return \Illuminate\View\View
+     * Form edit academic year
      */
     public function edit($id)
     {
-        // Check if user is employee
-        if (session('user_type') !== 'Employee') {
-            return redirect('/employee/login');
+        try {
+            $academicYear = MstAcademicYear::findOrFail($id);
+
+            return view('academic_years.edit', compact('academicYear'));
+        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+            return redirect()
+                ->route('employee.academic_years.index')
+                ->with('error', 'Academic Year not found!');
+        } catch (\Exception $e) {
+            Log::error('Error fetching academic year: ' . $e->getMessage());
+            return redirect()
+                ->route('employee.academic_years.index')
+                ->with('error', 'Error fetching academic year!');
         }
-
-        // Raw SELECT query to get academic year
-        $academicYears = DB::select('SELECT * FROM mst_academic_year WHERE academic_year_id = ?', [$id]);
-
-        if (empty($academicYears)) {
-            return redirect()->route('employee.academic_years.index')
-                           ->with('error', 'Academic Year not found!');
-        }
-
-        $academicYear = $academicYears[0];
-
-        return view('employee.academic_years.edit', ['academicYear' => $academicYear]);
     }
 
     /**
-     * Update academic year using Eloquent Model
-     * 
-     * @param \Illuminate\Http\Request $request
-     * @param string $id Academic Year ID
-     * @return \Illuminate\Http\RedirectResponse
+     * Update academic year
      */
     public function update(Request $request, $id)
     {
-        // Check if user is employee
-        if (session('user_type') !== 'Employee') {
-            return redirect('/employee/login');
-        }
-
-        // Validate input
-        $validated = $request->validate([
-            'start_date' => 'required|date',
-            'end_date' => 'required|date|after:start_date',
-            'semester' => 'required|string|max:10',
-            'status' => 'required|string|in:Active,Inactive',
-        ]);
-
-        // Add updated_by
-        $validated['updated_by'] = session('employee_id');
-
         try {
-            // Find academic year using Eloquent
+            $validated = $request->validate([
+                'start_date' => 'required|date',
+                'end_date' => 'required|date|after:start_date',
+                'semester' => 'required|string|max:20',
+                'status' => 'required|in:Active,Inactive',
+            ]);
+
             $academicYear = MstAcademicYear::findOrFail($id);
 
-            // Update academic year
-            $academicYear->update($validated);
+            $academicYear->update([
+                'start_date' => $validated['start_date'],
+                'end_date' => $validated['end_date'],
+                'semester' => $validated['semester'],
+                'status' => $validated['status'],
+                'updated_by' => session('employee_id') ?? 'SYSTEM',
+            ]);
 
-            return redirect()->route('employee.academic_years.index')
-                           ->with('success', 'Academic Year updated successfully!');
+            Log::info('Academic year updated: ' . $id);
+
+           return redirect()
+                ->route('employee.academic-years.index')
+                ->with('success', 'Academic Year created successfully!');
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return back()->withInput()->withErrors($e->errors());
         } catch (\Exception $e) {
-            return back()->withInput()
-                        ->with('error', 'Failed to update academic year: ' . $e->getMessage());
+            Log::error('Error updating academic year: ' . $e->getMessage());
+            return back()->withInput()->with('error', 'Error: ' . $e->getMessage());
         }
     }
 
     /**
-     * Delete academic year using Eloquent Model
-     * 
-     * @param string $id Academic Year ID
-     * @return \Illuminate\Http\RedirectResponse
+     * Hapus academic year
      */
     public function destroy($id)
     {
-        // Check if user is employee
-        if (session('user_type') !== 'Employee') {
-            return redirect('/employee/login');
-        }
-
         try {
-            // Find and delete academic year
             $academicYear = MstAcademicYear::findOrFail($id);
             $academicYear->delete();
 
-            return redirect()->route('employee.academic_years.index')
-                           ->with('success', 'Academic Year deleted successfully!');
+            return redirect()
+                ->route('employee.academic-years.index')
+                ->with('success', 'Academic Year created successfully!');
         } catch (\Exception $e) {
-            return back()->with('error', 'Failed to delete academic year: ' . $e->getMessage());
+            Log::error('Error deleting academic year: ' . $e->getMessage());
+            return redirect()
+                ->route('employee.academic_years.index')
+                ->with('error', 'Error deleting academic year!');
         }
     }
 }

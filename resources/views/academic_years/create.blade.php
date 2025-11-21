@@ -6,29 +6,15 @@
         <div class="col-md-8">
             <h2><i class="fas fa-plus-circle"></i> Create New Academic Year</h2>
         </div>
-        <div class="col-md-4 text-end">
-            <a href="{{ route('employee.academic_years.index') }}" class="btn btn-secondary">
-                <i class="fas fa-arrow-left"></i> Back to Academic Years
-            </a>
-        </div>
+       
     </div>
 
     <div class="card">
         <div class="card-body">
-            <form action="{{ route('employee.academic_years.store') }}" method="POST">
-                @csrf
+            <form action="{{ route('employee.academic.store-academic') }}" method="POST" enctype="multipart/form-data">
+                    @csrf
 
                 <div class="row">
-                    <div class="col-md-6 mb-3">
-                        <label for="academic_year_id" class="form-label">Academic Year ID <span class="text-danger">*</span></label>
-                        <input type="text" class="form-control @error('academic_year_id') is-invalid @enderror" 
-                               id="academic_year_id" name="academic_year_id" value="{{ old('academic_year_id') }}" required
-                               placeholder="e.g., 2024-2025">
-                        @error('academic_year_id')
-                            <div class="invalid-feedback">{{ $message }}</div>
-                        @enderror
-                    </div>
-
                     <div class="col-md-6 mb-3">
                         <label for="semester" class="form-label">Semester <span class="text-danger">*</span></label>
                         <select class="form-select @error('semester') is-invalid @enderror" 
@@ -38,6 +24,16 @@
                             <option value="2" {{ old('semester') == '2' ? 'selected' : '' }}>Semester 2</option>
                         </select>
                         @error('semester')
+                            <div class="invalid-feedback">{{ $message }}</div>
+                        @enderror
+                    </div>
+
+                    <div class="col-md-6 mb-3">
+                        <label for="academic_year_id" class="form-label">Academic Year ID <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control @error('academic_year_id') is-invalid @enderror" 
+                               id="academic_year_id" name="academic_year_id" value="{{ old('academic_year_id') }}" required
+                               placeholder="e.g., 2024-2025">
+                        @error('academic_year_id')
                             <div class="invalid-feedback">{{ $message }}</div>
                         @enderror
                     </div>
@@ -80,7 +76,7 @@
                     <button type="submit" class="btn btn-primary">
                         <i class="fas fa-save"></i> Create Academic Year
                     </button>
-                    <a href="{{ route('employee.academic_years.index') }}" class="btn btn-secondary">
+                    <a href="{{ route('employee.academic-years.index') }}" class="btn btn-secondary">
                         <i class="fas fa-times"></i> Cancel
                     </a>
                 </div>

@@ -11,64 +11,73 @@ use Illuminate\Support\Facades\DB;
 class EventController extends Controller
 {
     // Check authentication before accessing
-    public function __construct()
-    {
-        if (session('user_type') !== 'Employee') {
-            return redirect('/employee/login');
-        }
-    }
+   
 
     // ============ EVENT CRUD ============
 
     /**
      * Display all events with tag count
      */
-    public function index()
-    {
-        $events = DB::select('
-            SELECT e.*, 
-                   COUNT(t.tag_id) as tag_count
-            FROM mst_events e
-            LEFT JOIN mst_tag_events t ON e.event_id = t.event_id
-            GROUP BY e.event_id, e.event_name, e.description, e.location, 
-                     e.status, e.created_at, e.updated_at, e.created_by, e.updated_by
-            ORDER BY e.event_id DESC
-        ');
+  public function index()
+{
+    // Mengganti 'e.*' dengan daftar kolom eksplisit dan mengecualikan kolom 'description'
+    // yang mungkin bertipe TEXT/NTEXT di SQL Server.
+    $events = collect(DB::select('
+        SELECT e.event_id, e.event_name, e.location, e.status, 
+               e.created_at, e.updated_at, e.created_by, e.updated_by, 
+               COUNT(t.tag_id) as tag_count
+        FROM mst_events e
+        LEFT JOIN mst_tag_events t ON e.event_id = t.event_id
+        GROUP BY e.event_id, e.event_name, e.location, e.status, 
+                 e.created_at, e.updated_at, e.created_by, e.updated_by
+        ORDER BY e.event_id DESC
+    '));
 
-        return view('employee.events.index', compact('events'));
-    }
+    return view('events.index', compact('events'));
+}
 
     /**
      * Show form for creating new event
      */
     public function create()
     {
-        return view('employee.events.create');
+        return view('events.create');
     }
 
     /**
      * Store new event in database
      */
-    public function store(Request $request)
-    {
-        $validated = $request->validate([
-            'event_id' => 'required|string|max:50|unique:mst_events',
-            'event_name' => 'required|string|max:255',
-            'description' => 'required|string',
-            'location' => 'required|string|max:255',
-            'status' => 'required|in:Upcoming,Ongoing,Completed,Cancelled',
-        ]);
+   public function store(Request $request)
+{
+    $validated = $request->validate([
+        'event_name' => 'required|string|max:255',
+        'description' => 'required|string',
+        'location' => 'required|string|max:255',
+        'status' => 'required|in:Upcoming,Ongoing,Completed,Cancelled',
+    ]);
 
-        $validated['created_by'] = session('employee_id');
-        $validated['updated_by'] = session('employee_id');
-        $validated['created_at'] = now();
-        $validated['updated_at'] = now();
-
-        MstEvent::create($validated);
-
-        return redirect()->route('employee.events.index')
-                       ->with('success', 'Event created successfully!');
+    // ==== Generate Event ID ====
+    $lastEvent = MstEvent::orderBy('event_id', 'DESC')->first();
+    if ($lastEvent) {
+        $lastNumber = intval(substr($lastEvent->event_id, 3));
+        $newId = 'EVN' . str_pad($lastNumber + 1, 4, '0', STR_PAD_LEFT);
+    } else {
+        $newId = 'EVN0001';
     }
+
+    // Tambahkan ID dan metadata
+    $validated['event_id'] = $newId;
+    $validated['created_by'] = session('employee_id') ?? 'SYSTEM';
+    $validated['updated_by'] = session('employee_id') ?? 'SYSTEM';
+    $validated['created_at'] = now();
+    $validated['updated_at'] = now();
+
+    MstEvent::create($validated);
+
+    return redirect()->route('employee.events.index')
+                   ->with('success', 'Event created successfully!');
+}
+
 
     /**
      * Show form for editing event
@@ -85,7 +94,7 @@ class EventController extends Controller
                            ->with('error', 'Event not found!');
         }
 
-        return view('employee.events.edit', ['event' => $event[0]]);
+        return view('events.edit', ['event' => $event[0]]);
     }
 
     /**

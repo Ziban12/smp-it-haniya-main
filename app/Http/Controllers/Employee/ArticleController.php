@@ -7,16 +7,12 @@ use App\Models\MstTagArticle;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class ArticleController extends Controller
 {
     // Check authentication before accessing
-    public function __construct()
-    {
-        if (session('user_type') !== 'Employee') {
-            return redirect('/employee/login');
-        }
-    }
+  
 
     // ============ ARTICLE CRUD ============
 
@@ -25,17 +21,37 @@ class ArticleController extends Controller
      */
     public function index()
     {
-        $articles = DB::select('
-            SELECT a.*, 
-                   COUNT(t.tag_id) as tag_count
-            FROM mst_articles a
-            LEFT JOIN mst_tag_articles t ON a.article_id = t.article_id
-            GROUP BY a.article_id, a.title, a.slug, a.content, a.image, 
-                     a.article_type, a.status, a.created_at, a.updated_at, a.created_by, a.updated_by
-            ORDER BY a.article_id DESC
-        ');
+        $articles = collect(DB::select('
+    SELECT 
+        a.article_id,
+        a.title,
+        a.slug,
+        MAX(CAST(a.content AS VARCHAR(MAX))) AS content,
+        MAX(CAST(a.image AS VARBINARY(MAX))) AS image,
+        a.article_type,
+        a.status,
+        a.created_at,
+        a.updated_at,
+        a.created_by,
+        a.updated_by,
+        COUNT(t.tag_id) AS tag_count
+    FROM mst_articles a
+    LEFT JOIN mst_tag_articles t ON a.article_id = t.article_id
+    GROUP BY 
+        a.article_id,
+        a.title,
+        a.slug,
+        a.article_type,
+        a.status,
+        a.created_at,
+        a.updated_at,
+        a.created_by,
+        a.updated_by
+    ORDER BY a.article_id DESC
+'));
 
-        return view('employee.articles.index', compact('articles'));
+
+        return view('articles.index', compact('articles'));
     }
 
     /**
@@ -43,16 +59,28 @@ class ArticleController extends Controller
      */
     public function create()
     {
-        return view('employee.articles.create');
+        return view('articles.create');
     }
 
     /**
      * Store new article in database
      */
-    public function store(Request $request)
-    {
+   public function store(Request $request)
+{
+    try {
+
+        // Generate ID otomatis ARCxxxx
+        $lastArticle = MstArticle::orderBy('article_id', 'DESC')->first();
+
+        if ($lastArticle) {
+            $lastNumber = intval(substr($lastArticle->article_id, 3));
+            $newId = 'ARC' . str_pad($lastNumber + 1, 4, '0', STR_PAD_LEFT);
+        } else {
+            $newId = 'ARC0001';
+        }
+
+        // Validasi
         $validated = $request->validate([
-            'article_id' => 'required|string|max:50|unique:mst_articles',
             'title' => 'required|string|max:255',
             'slug' => 'required|string|max:255|unique:mst_articles',
             'content' => 'required|string',
@@ -61,34 +89,48 @@ class ArticleController extends Controller
             'status' => 'required|in:Draft,Published,Archived',
         ]);
 
-        $validated['created_by'] = session('employee_id');
-        $validated['updated_by'] = session('employee_id');
+        // Tambahkan field otomatis
+        $validated['article_id'] = $newId;
+        $validated['created_by'] = session('employee_id') ?? 'SYSTEM';
+        $validated['updated_by'] = session('employee_id') ?? 'SYSTEM';
         $validated['created_at'] = now();
         $validated['updated_at'] = now();
 
+        // Simpan
         MstArticle::create($validated);
 
-        return redirect()->route('employee.articles.index')
-                       ->with('success', 'Article created successfully!');
+        return redirect()
+            ->route('employee.articles.index')
+            ->with('success', 'Article created successfully!');
+            
+    } catch (\Exception $e) {
+        return back()
+            ->withInput()
+            ->with('error', 'Error: ' . $e->getMessage());
     }
+}
 
     /**
      * Show form for editing article
      */
-    public function edit($id)
-    {
-        $article = DB::select(
-            'SELECT * FROM mst_articles WHERE article_id = ?',
-            [$id]
-        );
+   public function edit($id)
+{
+    try {
+        $article = MstArticle::findOrFail($id);
 
-        if (empty($article)) {
-            return redirect()->route('employee.articles.index')
-                           ->with('error', 'Article not found!');
-        }
-
-        return view('employee.articles.edit', ['article' => $article[0]]);
+        return view('articles.edit', compact('article'));
+    } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+        return redirect()
+            ->route('employee.articles.index')
+            ->with('error', 'Article not found!');
+    } catch (\Exception $e) {
+        Log::error('Error fetching article: ' . $e->getMessage());
+        return redirect()
+            ->route('employee.articles.index')
+            ->with('error', 'Error fetching article!');
     }
+}
+
 
     /**
      * Update article in database

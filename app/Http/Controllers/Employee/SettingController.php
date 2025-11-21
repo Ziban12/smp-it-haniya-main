@@ -11,12 +11,7 @@ use Illuminate\Support\Facades\DB;
 class SettingController extends Controller
 {
     // Check authentication before accessing
-    public function __construct()
-    {
-        if (session('user_type') !== 'Employee') {
-            return redirect('/employee/login');
-        }
-    }
+   
 
     // ============ HEADER SETTINGS ============
 
@@ -35,7 +30,7 @@ class SettingController extends Controller
             ORDER BY h.header_id DESC
         ');
 
-        return view('employee.settings.index-header', compact('headers'));
+        return view('settings.index-header', compact('headers'));
     }
 
     /**
@@ -43,7 +38,7 @@ class SettingController extends Controller
      */
     public function createHeader()
     {
-        return view('employee.settings.create-header');
+        return view('settings.create-header');
     }
 
     /**

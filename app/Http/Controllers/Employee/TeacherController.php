@@ -5,14 +5,16 @@ namespace App\Http\Controllers\Employee;
 use App\Http\Controllers\Controller;
 use App\Models\MstTeacher;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
 
 /**
  * Teacher Management Controller
  * 
  * Handles CRUD operations for teacher management.
- * Uses raw SELECT for reading, Eloquent for create/update/delete.
+ * Attributes: teacher_id, first_name, last_name, npk, gender, birth_place,
+ *             birth_date, profile_photo, address, phone, entry_date, password,
+ *             level, status, created_at, updated_at, created_by, updated_by
  */
 class TeacherController extends Controller
 {
@@ -32,21 +34,22 @@ class TeacherController extends Controller
     /**
      * Display list of teachers
      * 
-     * RAW SELECT query to fetch all teachers
-     * 
      * @return \Illuminate\View\View
      */
-   public function index()
-{
-    // RAW SELECT QUERY (hasil array) → ubah ke Collection
-    $teachers = collect(DB::select(
-        'SELECT * FROM mst_teachers WHERE status = ? ORDER BY teacher_id DESC',
-        ['Active']
-    ));
+    public function index()
+    {
+        try {
+            // Fetch all active teachers ordered by creation date
+            $teachers = MstTeacher::where('status', 'Active')
+                ->orderBy('created_at', 'DESC')
+                ->get();
 
-    return view('teachers.index', compact('teachers'));
-}
-
+            return view('teachers.index', compact('teachers'));
+        } catch (\Exception $e) {
+            Log::error('Error fetching teachers: ' . $e->getMessage());
+            return view('teachers.index', ['teachers' => collect([])]);
+        }
+    }
 
     /**
      * Show the form for creating a new teacher
@@ -61,81 +64,102 @@ class TeacherController extends Controller
     /**
      * Store a newly created teacher in database
      * 
-     * Uses Eloquent Model for CREATE operation
-     * 
      * @param \Illuminate\Http\Request $request
      * @return \Illuminate\Http\RedirectResponse
      */
     public function store(Request $request)
-    {
+{
+    try {
         // Validate input
         $validated = $request->validate([
-            'teacher_id' => 'required|string|unique:mst_teachers',
             'first_name' => 'required|string|max:100',
             'last_name' => 'required|string|max:100',
-            'npk' => 'required|string|max:50|unique:mst_teachers',
+            'npk' => 'required|string|max:50|unique:mst_teachers,npk',
             'password' => 'required|string|min:6|confirmed',
             'gender' => 'nullable|in:M,F',
             'birth_place' => 'nullable|string|max:100',
             'birth_date' => 'nullable|date',
+            'profile_photo' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
             'address' => 'nullable|string|max:255',
             'phone' => 'nullable|string|max:20',
             'entry_date' => 'nullable|date',
             'level' => 'nullable|string|max:50',
+            'status' => 'nullable|in:Active,Inactive'
         ]);
 
-        // ELOQUENT CREATE: Create new teacher
+        // Generate ID terbaru
+        $lastTeacher = MstTeacher::orderBy('teacher_id', 'DESC')->first();
+        if ($lastTeacher) {
+            $lastNumber = intval(substr($lastTeacher->teacher_id, 3));
+            $newId = 'TCR' . str_pad($lastNumber + 1, 4, '0', STR_PAD_LEFT);
+        } else {
+            $newId = 'TCR0001';
+        }
+
+        // Handle profile photo upload
+        $profilePhotoPath = null;
+        if ($request->hasFile('profile_photo')) {
+            $profilePhotoPath = $request->file('profile_photo')->store('teachers', 'public');
+        }
+
+        // Create new teacher
         MstTeacher::create([
-            'teacher_id' => $validated['teacher_id'],
-            'first_name' => $validated['first_name'],
-            'last_name' => $validated['last_name'],
-            'npk' => $validated['npk'],
-            'password' => Hash::make($validated['password']),
-            'gender' => $validated['gender'] ?? null,
-            'birth_place' => $validated['birth_place'] ?? null,
-            'birth_date' => $validated['birth_date'] ?? null,
-            'address' => $validated['address'] ?? null,
-            'phone' => $validated['phone'] ?? null,
-            'entry_date' => $validated['entry_date'] ?? now(),
-            'level' => $validated['level'] ?? 'Teacher',
-            'status' => 'Active',
-            'created_by' => session('employee_id')
+            'teacher_id'   => $newId, // <-- ID dimasukkan di sini
+            'first_name'   => $validated['first_name'],
+            'last_name'    => $validated['last_name'],
+            'npk'          => $validated['npk'],
+            'password'     => Hash::make($validated['password']),
+            'gender'       => $validated['gender'] ?? null,
+            'birth_place'  => $validated['birth_place'] ?? null,
+            'birth_date'   => $validated['birth_date'] ?? null,
+            'profile_photo'=> $profilePhotoPath,
+            'address'      => $validated['address'] ?? null,
+            'phone'        => $validated['phone'] ?? null,
+            'entry_date'   => $validated['entry_date'] ?? date('Y-m-d'),
+            'level'        => $validated['level'] ?? 'Teacher',
+            'status'       => $validated['status'] ?? 'Active',
+            'created_by'   => session('employee_id') ?? 'SYSTEM',
+            'updated_by'   => session('employee_id') ?? 'SYSTEM'
         ]);
+
+        Log::info('Teacher created successfully');
 
         return redirect()->route('employee.teachers.index')
             ->with('success', 'Teacher created successfully!');
+    } catch (\Illuminate\Validation\ValidationException $e) {
+        Log::warning('Validation error while creating teacher: ' . json_encode($e->errors()));
+        return back()->withInput()->withErrors($e->errors());
+    } catch (\Exception $e) {
+        Log::error('Error creating teacher: ' . $e->getMessage());
+        return back()->withInput()->with('error', 'Error creating teacher: ' . $e->getMessage());
     }
+}
 
     /**
      * Show the form for editing the specified teacher
      * 
-     * RAW SELECT to fetch teacher data
-     * 
      * @param string $id
-     * @return \Illuminate\View\View
+     * @return \Illuminate\Contracts\View\View|\Illuminate\Http\RedirectResponse
      */
     public function edit($id)
     {
-        // RAW SELECT QUERY: Fetch teacher by ID
-        $teachers = DB::select(
-            'SELECT * FROM mst_teachers WHERE teacher_id = ?',
-            [$id]
-        );
-
-        if (empty($teachers)) {
+        try {
+            // Fetch teacher by ID using Eloquent
+            $teacher = MstTeacher::findOrFail($id);
+            return view('teachers.edit', compact('teacher'));
+        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+            Log::warning('Teacher not found: ' . $id);
             return redirect()->route('employee.teachers.index')
                 ->with('error', 'Teacher not found!');
+        } catch (\Exception $e) {
+            Log::error('Error fetching teacher: ' . $e->getMessage());
+            return redirect()->route('employee.teachers.index')
+                ->with('error', 'Error fetching teacher data');
         }
-
-        $teacher = $teachers[0];
-
-        return view('employee.teachers.edit', compact('teacher'));
     }
 
     /**
      * Update the specified teacher in database
-     * 
-     * Uses Eloquent Model for UPDATE operation
      * 
      * @param \Illuminate\Http\Request $request
      * @param string $id
@@ -143,68 +167,101 @@ class TeacherController extends Controller
      */
     public function update(Request $request, $id)
     {
-        // Validate input
-        $validated = $request->validate([
-            'first_name' => 'required|string|max:100',
-            'last_name' => 'required|string|max:100',
-            'npk' => 'required|string|max:50|unique:mst_teachers,npk,' . $id . ',teacher_id',
-            'password' => 'nullable|string|min:6|confirmed',
-            'gender' => 'nullable|in:M,F',
-            'birth_place' => 'nullable|string|max:100',
-            'birth_date' => 'nullable|date',
-            'address' => 'nullable|string|max:255',
-            'phone' => 'nullable|string|max:20',
-            'entry_date' => 'nullable|date',
-            'level' => 'nullable|string|max:50',
-        ]);
+        try {
+            // Validate input
+            $validated = $request->validate([
+                'first_name' => 'required|string|max:100',
+                'last_name' => 'required|string|max:100',
+                'npk' => 'required|string|max:50|unique:mst_teachers,npk,' . $id . ',teacher_id',
+                'password' => 'nullable|string|min:6|confirmed',
+                'gender' => 'nullable|in:M,F',
+                'birth_place' => 'nullable|string|max:100',
+                'birth_date' => 'nullable|date',
+                'profile_photo' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+                'address' => 'nullable|string|max:255',
+                'phone' => 'nullable|string|max:20',
+                'entry_date' => 'nullable|date',
+                'level' => 'nullable|string|max:50',
+                'status' => 'nullable|in:Active,Inactive'
+            ]);
 
-        // ELOQUENT UPDATE: Update teacher record
-        $teacher = MstTeacher::findOrFail($id);
-        
-        $updateData = [
-            'first_name' => $validated['first_name'],
-            'last_name' => $validated['last_name'],
-            'npk' => $validated['npk'],
-            'gender' => $validated['gender'] ?? $teacher->gender,
-            'birth_place' => $validated['birth_place'] ?? $teacher->birth_place,
-            'birth_date' => $validated['birth_date'] ?? $teacher->birth_date,
-            'address' => $validated['address'] ?? $teacher->address,
-            'phone' => $validated['phone'] ?? $teacher->phone,
-            'entry_date' => $validated['entry_date'] ?? $teacher->entry_date,
-            'level' => $validated['level'] ?? $teacher->level,
-            'updated_by' => session('employee_id')
-        ];
+            // Get teacher and update
+            $teacher = MstTeacher::findOrFail($id);
 
-        // Only update password if provided
-        if (!empty($validated['password'])) {
-            $updateData['password'] = Hash::make($validated['password']);
+            $updateData = [
+                'first_name' => $validated['first_name'],
+                'last_name' => $validated['last_name'],
+                'npk' => $validated['npk'],
+                'gender' => $validated['gender'] ?? $teacher->gender,
+                'birth_place' => $validated['birth_place'] ?? $teacher->birth_place,
+                'birth_date' => $validated['birth_date'] ?? $teacher->birth_date,
+                'address' => $validated['address'] ?? $teacher->address,
+                'phone' => $validated['phone'] ?? $teacher->phone,
+                'entry_date' => $validated['entry_date'] ?? $teacher->entry_date,
+                'level' => $validated['level'] ?? $teacher->level,
+                'status' => $validated['status'] ?? $teacher->status,
+                'updated_by' => session('employee_id') ?? 'SYSTEM'
+            ];
+
+            // Handle profile photo upload
+            if ($request->hasFile('profile_photo')) {
+                $updateData['profile_photo'] = $request->file('profile_photo')->store('teachers', 'public');
+            }
+
+            // Only update password if provided
+            if (!empty($validated['password'])) {
+                $updateData['password'] = Hash::make($validated['password']);
+            }
+
+            $teacher->update($updateData);
+
+            Log::info('Teacher updated successfully: ' . $id);
+
+            return redirect()->route('employee.teachers.index')
+                ->with('success', 'Teacher updated successfully!');
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            Log::warning('Validation error while updating teacher: ' . json_encode($e->errors()));
+            return back()->withInput()->withErrors($e->errors());
+        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+            Log::warning('Teacher not found: ' . $id);
+            return redirect()->route('employee.teachers.index')
+                ->with('error', 'Teacher not found!');
+        } catch (\Exception $e) {
+            Log::error('Error updating teacher: ' . $e->getMessage());
+            return back()->withInput()->with('error', 'Error updating teacher: ' . $e->getMessage());
         }
-
-        $teacher->update($updateData);
-
-        return redirect()->route('employee.teachers.index')
-            ->with('success', 'Teacher updated successfully!');
     }
 
     /**
      * Delete the specified teacher from database
-     * 
-     * Uses Eloquent Model for DELETE operation
      * 
      * @param string $id
      * @return \Illuminate\Http\RedirectResponse
      */
     public function destroy($id)
     {
-        // ELOQUENT DELETE: Mark teacher as inactive
-        $teacher = MstTeacher::findOrFail($id);
-        
-        $teacher->update([
-            'status' => 'Inactive',
-            'updated_by' => session('employee_id')
-        ]);
+        try {
+            // Get teacher and mark as inactive
+            $teacher = MstTeacher::findOrFail($id);
 
-        return redirect()->route('employee.teachers.index')
-            ->with('success', 'Teacher deleted successfully!');
+            $teacher->update([
+                'status' => 'Inactive',
+                'updated_by' => session('employee_id') ?? 'SYSTEM'
+            ]);
+
+            Log::info('Teacher deleted: ' . $id);
+
+            return redirect()->route('employee.teachers.index')
+                ->with('success', 'Teacher deleted successfully!');
+        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+            Log::warning('Teacher not found: ' . $id);
+            return redirect()->route('employee.teachers.index')
+                ->with('error', 'Teacher not found!');
+        } catch (\Exception $e) {
+            Log::error('Error deleting teacher: ' . $e->getMessage());
+            return redirect()->route('employee.teachers.index')
+                ->with('error', 'Error deleting teacher: ' . $e->getMessage());
+        }
     }
 }
+

@@ -21,8 +21,9 @@
                         </div>
                     @endif
 
-                    <form action="{{ route('employee.attendance.store') }}" method="POST">
-                        @csrf
+                  <form method="POST" action="{{ route('employee.attendance.store') }}">
+    @csrf
+
 
                         <div class="mb-3">
                             <label for="class_id" class="form-label">Class <span class="text-danger">*</span></label>

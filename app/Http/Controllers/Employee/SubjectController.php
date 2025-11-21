@@ -1,10 +1,11 @@
 <?php
 
 namespace App\Http\Controllers\Employee;
-
+use App\Http\Controllers\Controller;
 use App\Models\MstSubject;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 /**
  * SubjectController
@@ -23,29 +24,24 @@ class SubjectController extends Controller
     public function index()
     {
         // Check if user is employee
-        if (session('user_type') !== 'Employee') {
-            return redirect('/employee/login');
-        }
+       
 
         // Raw SELECT query to get all subjects
         $subjects = DB::select('SELECT * FROM mst_subjects ORDER BY subject_id DESC');
 
-        return view('employee.subjects.index', ['subjects' => $subjects]);
+        return view('subjects.index', ['subjects' => $subjects]);
     }
 
     /**
      * Show form to create new subject
      * 
-     * @return \Illuminate\View\View
+     * @return \Illuminate\Contracts\View\View|\Illuminate\Http\RedirectResponse
      */
     public function create()
     {
         // Check if user is employee
-        if (session('user_type') !== 'Employee') {
-            return redirect('/employee/login');
-        }
 
-        return view('employee.subjects.create');
+        return view('subjects.create');
     }
 
     /**
@@ -54,50 +50,65 @@ class SubjectController extends Controller
      * @param \Illuminate\Http\Request $request
      * @return \Illuminate\Http\RedirectResponse
      */
-    public function store(Request $request)
-    {
-        // Check if user is employee
-        if (session('user_type') !== 'Employee') {
-            return redirect('/employee/login');
-        }
-
+ public function store(Request $request)
+{
+    try {
         // Validate input
         $validated = $request->validate([
-            'subject_id' => 'required|string|max:50|unique:mst_subjects,subject_id',
             'subject_name' => 'required|string|max:100',
-            'subject_code' => 'required|string|max:20',
-            'class_level' => 'required|string|max:10',
-            'description' => 'nullable|string|max:500',
+            'subject_code' => 'required|string|max:20|unique:mst_subjects,subject_code',
+            'class_level'  => 'required|integer|min:1|max:12',
+            'description'  => 'nullable|string|max:500',
+            'status'       => 'nullable|in:Active,Inactive'
         ]);
 
-        // Add created_by to data
-        $validated['created_by'] = session('employee_id');
-        $validated['updated_by'] = session('employee_id');
-
-        // Create subject using Eloquent
-        try {
-            MstSubject::create($validated);
-            return redirect()->route('employee.subjects.index')
-                           ->with('success', 'Subject created successfully!');
-        } catch (\Exception $e) {
-            return back()->withInput()
-                        ->with('error', 'Failed to create subject: ' . $e->getMessage());
+        // ==== Generate Subject ID ====
+        $lastSubject = MstSubject::orderBy('subject_id', 'DESC')->first();
+        if ($lastSubject) {
+            $lastNumber = intval(substr($lastSubject->subject_id, 3));
+            $newId = 'SBJ' . str_pad($lastNumber + 1, 4, '0', STR_PAD_LEFT);
+        } else {
+            $newId = 'SBJ0001';
         }
+
+        // Create new subject
+        MstSubject::create([
+            'subject_id'   => $newId,
+            'subject_name' => $validated['subject_name'],
+            'subject_code' => $validated['subject_code'],
+            'class_level'  => $validated['class_level'],
+            'description'  => $validated['description'] ?? null,
+            'status'       => $validated['status'] ?? 'Active',
+            'created_by'   => session('employee_id') ?? 'SYSTEM',
+            'updated_by'   => session('employee_id') ?? 'SYSTEM',
+        ]);
+
+    Log::info('Subject created successfully: ' . $newId);
+
+        return redirect()->route('employee.subjects.index')
+            ->with('success', 'Subject created successfully!');
+    } catch (\Illuminate\Validation\ValidationException $e) {
+        Log::warning('Validation error while creating subject: ' . json_encode($e->errors()));
+        return back()->withInput()->withErrors($e->errors());
+    } catch (\Exception $e) {
+        Log::error('Error creating subject: ' . $e->getMessage());
+        return back()->withInput()->with('error', 'Error creating subject: ' . $e->getMessage());
     }
+}
+
+
+
 
     /**
      * Show form to edit subject (fetch data with raw SELECT)
      * 
      * @param string $id Subject ID
-     * @return \Illuminate\View\View
+     * @return \Illuminate\Contracts\View\View|\Illuminate\Http\RedirectResponse
      */
     public function edit($id)
     {
         // Check if user is employee
-        if (session('user_type') !== 'Employee') {
-            return redirect('/employee/login');
-        }
-
+      
         // Raw SELECT query to get subject
         $subjects = DB::select('SELECT * FROM mst_subjects WHERE subject_id = ?', [$id]);
 
@@ -108,7 +119,7 @@ class SubjectController extends Controller
 
         $subject = $subjects[0];
 
-        return view('employee.subjects.edit', ['subject' => $subject]);
+        return view('subjects.edit', ['subject' => $subject]);
     }
 
     /**
@@ -120,10 +131,7 @@ class SubjectController extends Controller
      */
     public function update(Request $request, $id)
     {
-        // Check if user is employee
-        if (session('user_type') !== 'Employee') {
-            return redirect('/employee/login');
-        }
+       
 
         // Validate input
         $validated = $request->validate([
@@ -160,10 +168,7 @@ class SubjectController extends Controller
     public function destroy($id)
     {
         // Check if user is employee
-        if (session('user_type') !== 'Employee') {
-            return redirect('/employee/login');
-        }
-
+       
         try {
             // Find and delete subject
             $subject = MstSubject::findOrFail($id);

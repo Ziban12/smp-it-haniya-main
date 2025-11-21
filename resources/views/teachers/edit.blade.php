@@ -11,7 +11,7 @@
                 <h5 class="mb-0"><i class="fas fa-user-edit"></i> Edit Teacher</h5>
             </div>
             <div class="card-body">
-                <form action="{{ route('employee.teachers.update', $teacher->teacher_id) }}" method="POST">
+                <form action="{{ route('employee.teachers.update', $teacher->teacher_id) }}" method="POST" enctype="multipart/form-data">
                     @csrf
                     @method('PUT')
 
@@ -28,12 +28,39 @@
                         </div>
                         <div class="col-md-6">
                             <div class="form-group">
+                                <label for="profile_photo" class="form-label">Profile Photo</label>
+                                @if($teacher->profile_photo)
+                                    <div class="mb-2">
+                                        <img src="{{ asset('storage/' . $teacher->profile_photo) }}" style="max-width: 150px; height: auto; border-radius: 5px;">
+                                    </div>
+                                @endif
+                                <input type="file" class="form-control @error('profile_photo') is-invalid @enderror" 
+                                       id="profile_photo" name="profile_photo" accept="image/*">
+                                @error('profile_photo')
+                                    <div class="invalid-feedback">{{ $message }}</div>
+                                @enderror
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
                                 <label for="last_name" class="form-label">Last Name *</label>
                                 <input type="text" class="form-control @error('last_name') is-invalid @enderror" 
                                        id="last_name" name="last_name" value="{{ old('last_name', $teacher->last_name) }}" required>
                                 @error('last_name')
                                     <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="status" class="form-label">Status</label>
+                                <select class="form-select" id="status" name="status">
+                                    <option value="Active" @selected(old('status', $teacher->status ?? 'Active') === 'Active')>Active</option>
+                                    <option value="Inactive" @selected(old('status', $teacher->status ?? 'Active') === 'Inactive')>Inactive</option>
+                                </select>
                             </div>
                         </div>
                     </div>

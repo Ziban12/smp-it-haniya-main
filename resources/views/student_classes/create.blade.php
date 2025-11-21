@@ -7,7 +7,7 @@
             <h2><i class="fas fa-plus-circle"></i> Assign Students to Class</h2>
         </div>
         <div class="col-md-4 text-end">
-            <a href="{{ route('employee.student_classes.index') }}" class="btn btn-secondary">
+            <a href="{{ route('employee.student-classes.index') }}" class="btn btn-secondary">
                 <i class="fas fa-arrow-left"></i> Back to Assignments
             </a>
         </div>
@@ -15,7 +15,7 @@
 
     <div class="card">
         <div class="card-body">
-            <form action="{{ route('employee.student_classes.store') }}" method="POST">
+            <form action="{{ route('employee.student-classes.store') }}" method="POST">
                 @csrf
 
                 <div class="row">
@@ -92,7 +92,7 @@
                     <button type="submit" class="btn btn-primary">
                         <i class="fas fa-save"></i> Assign Students
                     </button>
-                    <a href="{{ route('employee.student_classes.index') }}" class="btn btn-secondary">
+                    <a href="{{ route('employee.student-classes.index') }}" class="btn btn-secondary">
                         <i class="fas fa-times"></i> Cancel
                     </a>
                 </div>

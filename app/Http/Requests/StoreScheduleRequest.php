@@ -9,10 +9,6 @@ class StoreScheduleRequest extends FormRequest
     /**
      * Determine if the user is authorized to make this request.
      */
-    public function authorize(): bool
-    {
-        return session('user_type') === 'Employee';
-    }
 
     /**
      * Get the validation rules that apply to the request.
@@ -38,7 +34,8 @@ class StoreScheduleRequest extends FormRequest
             'academic_year_id' => [
                 'required',
                 'string',
-                'exists:mst_academic_years,academic_year_id',
+                // 🟢 diperbaiki di sini
+                'exists:mst_academic_year,academic_year_id',
             ],
             'day' => [
                 'required',

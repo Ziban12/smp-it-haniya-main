@@ -11,7 +11,7 @@
                 <h5 class="mb-0"><i class="fas fa-user-edit"></i> Edit Employee</h5>
             </div>
             <div class="card-body">
-                <form action="{{ route('employee.employees.update', $employee->employee_id) }}" method="POST">
+                <form action="{{ route('employee.employees.update', $employee->employee_id) }}" method="POST" enctype="multipart/form-data">
                     @csrf
                     @method('PUT')
 
@@ -117,6 +117,35 @@
                         <label for="entry_date" class="form-label">Entry Date</label>
                         <input type="date" class="form-control" id="entry_date" name="entry_date" 
                                value="{{ old('entry_date', $employee->entry_date) }}">
+                    </div>
+
+                    @if($employee->profile_photo)
+                        <div class="form-group">
+                            <label class="form-label">Current Profile Photo</label>
+                            <div class="mb-2">
+                                <img src="{{ asset('storage/' . $employee->profile_photo) }}" alt="Profile Photo" 
+                                     style="max-width: 150px; height: auto; border-radius: 8px;">
+                            </div>
+                        </div>
+                    @endif
+
+                    <div class="form-group">
+                        <label for="profile_photo" class="form-label">Profile Photo</label>
+                        <input type="file" class="form-control @error('profile_photo') is-invalid @enderror" 
+                               id="profile_photo" name="profile_photo" accept="image/*">
+                        <small class="form-text text-muted">Allowed: JPEG, PNG, JPG, GIF. Max 2MB</small>
+                        @error('profile_photo')
+                            <div class="invalid-feedback">{{ $message }}</div>
+                        @enderror
+                    </div>
+
+                    <div class="form-group">
+                        <label for="status" class="form-label">Status</label>
+                        <select class="form-select" id="status" name="status">
+                            <option value="">-- Select Status --</option>
+                            <option value="Active" @selected(old('status', $employee->status) === 'Active')>Active</option>
+                            <option value="Inactive" @selected(old('status', $employee->status) === 'Inactive')>Inactive</option>
+                        </select>
                     </div>
 
                     <div class="d-flex gap-2">

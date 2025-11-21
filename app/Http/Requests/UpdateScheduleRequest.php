@@ -11,7 +11,7 @@ class UpdateScheduleRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        return session('user_type') === 'Employee';
+        return true;
     }
 
     /**
@@ -38,7 +38,8 @@ class UpdateScheduleRequest extends FormRequest
             'academic_year_id' => [
                 'required',
                 'string',
-                'exists:mst_academic_years,academic_year_id',
+                // FIX DI SINI
+                'exists:mst_academic_year,academic_year_id',
             ],
             'day' => [
                 'required',
@@ -70,6 +71,7 @@ class UpdateScheduleRequest extends FormRequest
             'teacher_id.exists' => 'Selected teacher does not exist.',
             'academic_year_id.required' => 'Academic year is required.',
             'academic_year_id.exists' => 'Selected academic year does not exist.',
+
             'day.required' => 'Day is required.',
             'day.in' => 'Invalid day. Must be a valid weekday.',
             'start_time.required' => 'Start time is required.',

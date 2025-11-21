@@ -8,12 +8,11 @@ class MstDetailSetting extends Model
 {
     protected $table = 'mst_detail_settings';
     protected $primaryKey = 'detail_id';
-    public $incrementing = false;
-    protected $keyType = 'string';
-    public $timestamps = false;
+    public $incrementing = true;
+    protected $keyType = 'int';
+    public $timestamps = true;
 
     protected $fillable = [
-        'detail_id',
         'header_id',
         'item_code',
         'item_name',
